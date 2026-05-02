@@ -1,10 +1,15 @@
+from flask import Flask, render_template, request
+from PIL import Image
 import requests
 import io
+import gc
 
-# 👉 Replace with your actual Hugging Face Space URL
-HF_API = "https://your-space-name.hf.space/predict"
+app = Flask(__name__)
 
-# Class info (keep this)
+# 👉 YOUR HUGGING FACE SPACE URL (IMPORTANT)
+HF_API = "https://varshithazz-comvesters.hf.space/"
+
+# Class info
 class_info = {
     'plastic': {
         'toxicity': 'High',
@@ -23,20 +28,23 @@ class_info = {
     'organic': {
         'toxicity': 'Low',
         'years_to_degrade': '30-180 days',
-        'environmental_impact': 'Low - Biodegradable, returns to soil',
+        'environmental_impact': 'Low - Biodegradable',
         'recycling': 'Compostable',
-        'tips': 'Compost in bins or bury in soil. Great for gardens!'
+        'tips': 'Compost in bins or bury in soil.'
     },
     'chemical': {
-        'toxicity': 'High to Critical',
-        'years_to_degrade': 'Permanent (bioaccumulative)',
-        'environmental_impact': 'Severe - Contaminates soil and water',
-        'recycling': 'Depends on type - Hazardous waste',
-        'tips': 'Store safely, never pour down drains. Check local hazmat disposal.'
+        'toxicity': 'High',
+        'years_to_degrade': 'Permanent',
+        'environmental_impact': 'Severe - Soil & water contamination',
+        'recycling': 'Hazardous waste',
+        'tips': 'Never pour into drains. Use safe disposal methods.'
     }
 }
 
 
+# ========================
+# 🔥 CORE FUNCTION
+# ========================
 def detect_image(image):
     buffer = io.BytesIO()
     image.save(buffer, format="JPEG")
@@ -46,15 +54,15 @@ def detect_image(image):
         response = requests.post(
             HF_API,
             files={"file": buffer},
-            timeout=15
+            timeout=20
         )
 
-        data = response.json()["results"]
+        data = response.json().get("results", [])
 
         output = []
 
         for item in data:
-            class_name = item["class"]
+            class_name = item["class"].lower()
             confidence = item["confidence"]
 
             info = class_info.get(class_name, {})
@@ -67,5 +75,44 @@ def detect_image(image):
 
         return output
 
-    except Exception:
+    except Exception as e:
+        print("API Error:", e)
         return [{"class": "Error", "confidence": 0, "info": {}}]
+
+
+# ========================
+# 🌐 ROUTE
+# ========================
+@app.route("/", methods=["GET", "POST"])
+def index():
+    results = []
+
+    if request.method == "POST":
+        file = request.files.get("image")
+
+        if not file:
+            return render_template("index.html", results=[], error="No image uploaded")
+
+        image = None
+
+        try:
+            image = Image.open(io.BytesIO(file.read())).convert("RGB")
+
+            results = detect_image(image)
+
+        except Exception as e:
+            return render_template("index.html", results=[], error=str(e))
+
+        finally:
+            if image:
+                del image
+            gc.collect()
+
+    return render_template("index.html", results=results)
+
+
+# ========================
+# 🚀 RUN
+# ========================
+if __name__ == "__main__":
+    app.run()
