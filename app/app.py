@@ -7,7 +7,7 @@ import gc
 app = Flask(__name__)
 
 
-HF_API = "https://varshithazz-comvesters.hf.space/"
+HF_API = "https://varshithazz-comvesters.hf.space/predict"
 
 # Class metadata
 class_info = {
