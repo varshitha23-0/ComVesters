@@ -13,6 +13,7 @@ def get_model():
         # safer path resolution so it works on Render
         weights_path = os.path.join(os.path.dirname(__file__), "best.pt")
         model = YOLO(weights_path)  # load once, then reuse
+        model.fuse()
     return model
 
 
