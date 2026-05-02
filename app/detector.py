@@ -1,8 +1,17 @@
 from ultralytics import YOLO
 from PIL import Image
-
+import os
 # Load model once
-model = YOLO("app/best.pt")
+model = None
+
+def get_model():
+    global model
+    if model is None:
+        # safer path resolution so it works on Render
+        weights_path = os.path.join(os.path.dirname(__file__), "best.pt")
+        model = YOLO(weights_path)  # load once, then reuse
+    return model
+
 
 # Class-specific information for waste types
 class_info = {
@@ -39,7 +48,8 @@ class_info = {
 
 def detect_image(image_path):
     image = Image.open(image_path).convert("RGB")
-    results = model(image)
+     m = get_model()
+    results = m(image)
 
     output = []
 
