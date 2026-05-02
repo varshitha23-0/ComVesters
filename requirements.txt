@@ -1,7 +1,5 @@
 Flask==2.3.3
-ultralytics
-torch
-torchvision
+requests
 Pillow
 Werkzeug
 gunicorn
