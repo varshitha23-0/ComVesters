@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>♻️ ComVesters - AI Waste Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a14 0%, #141428 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #141428;
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            color: #e0e0e0;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 100%);
+            color: white;
+            padding: 50px 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+        
+        .upload-section {
+            padding: 50px;
+            border-bottom: 3px solid #4a4a5c;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .upload-area {
+            border: 3px dashed #3a3a4e;
+            border-radius: 15px;
+            padding: 50px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #1a1a2e;
+            color: #c0c0c0;
+            margin-bottom: 20px;
+        }
+        
+        .upload-content {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .upload-area:hover {
+            background: #2a2a3e;
+            border-color: #4a4a6c;
+            transform: scale(1.02);
+        }
+        
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        
+        .upload-area p {
+            color: #a0a0c0;
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .upload-area small {
+            color: #888;
+            font-size: 0.95em;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #3a3a4e 0%, #4a4a6c 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.05em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(90, 90, 124, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .results-section {
+            padding: 50px;
+        }
+        
+        .error-message {
+            background: #4a2a2a;
+            color: #ff6b6b;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #d32f2f;
+            font-weight: 600;
+        }
+        
+        .success-message {
+            background: #2a4a2a;
+            color: #6bff6b;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #388e3c;
+            font-weight: 600;
+        }
+        
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 100%);
+            border-radius: 15px;
+            padding: 30px;
+            border-left: 6px solid #3a3a4e;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.6);
+            color: #e0e0e0;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .result-card.plastic {
+            border-left-color: #FF6B6B;
+            background: linear-gradient(135deg, #4a3a3a 0%, #5a4a4a 100%);
+        }
+        
+        .result-card.medical {
+            border-left-color: #FF0000;
+            background: linear-gradient(135deg, #4a2a2a 0%, #5a3a3a 100%);
+        }
+        
+        .result-card.organic {
+            border-left-color: #51CF66;
+            background: linear-gradient(135deg, #3a4a3a 0%, #4a5a4a 100%);
+        }
+        
+        .result-card.chemical {
+            border-left-color: #FFD93D;
+            background: linear-gradient(135deg, #4a4a3a 0%, #5a5a4a 100%);
+        }
+        
+        .waste-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .class-name {
+            font-size: 1.8em;
+            font-weight: 900;
+            margin-bottom: 10px;
+            color: #f0f0f0;
+        }
+        
+        .confidence {
+            font-size: 1em;
+            color: #a0a0c0;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4a4a6c;
+        }
+        
+        .info-label {
+            font-weight: 700;
+            color: #e5e5e5;
+            font-size: 0.95em;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #f7f7f7;
+            font-size: 1em;
+            font-weight: 600;
+        }
+        
+        .tips {
+            background: rgba(255, 217, 61, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #FFD93D;
+            font-style: italic;
+            color: #e0e0e0;
+        }
+        
+        .tips strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0a0c0;
+            font-style: normal;
+            font-weight: 700;
+        }
+        
+        .cleanup-alert {
+            background: rgba(255, 69, 0, 0.15);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #FF4500;
+            font-weight: 600;
+            color: #ff8c42;
+            font-size: 0.95em;
+        }
+        
+        .image-preview {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 3px solid #4a4a5c;
+            text-align: center;
+        }
+        
+        .image-preview h3 {
+            color: #e0e0e0;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .image-preview img {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .no-results {
+            text-align: center;
+            color: #888;
+            padding: 60px 20px;
+            font-size: 1.1em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+        
+        .spinner {
+            border: 4px solid #4a4a5c;
+            border-top: 4px solid #5a5a7c;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        footer {
+            background: #1a1a2e;
+            padding: 30px;
+            text-align: center;
+            color: #888;
+            font-size: 0.95em;
+            border-top: 2px solid #2a2a3e;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 700;
+            margin-right: 5px;
+        }
+        
+        .badge.high {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .badge.critical {
+            background: #d32f2f;
+            color: white;
+        }
+        
+        .badge.low {
+            background: #51cf66;
+            color: white;
+        }
+        
+        .message {
+            background: #4a4a2a;
+            color: #e0c040;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>♻️ ComVesters: Waste Detection & Environmental Monitoring</h1>
+            <p>Detect waste in streets and residential areas using YOLOv8. Analyze health impacts, calculate Waste Hazard Index (WHI), and generate cleanup alerts.</p>
+        </header>
+        
+        <div class="upload-section">
+            <div class="form-group">
+                <form id="uploadForm" method="POST" enctype="multipart/form-data">
+                    <div class="upload-area">
+                        <div class="upload-content" onclick="document.getElementById('imageInput').click()">
+                            <p>📸 Click to upload image or drag & drop</p>
+                            <small>PNG, JPG, GIF, or BMP (max 16MB)</small>
+                            <input type="file" id="imageInput" name="image" accept=".png,.jpg,.jpeg,.gif,.bmp" required>
+                        </div>
+                    </div>
+                    <button type="submit">🔍 Detect Waste & Analyze Impact</button>
+                </form>
+            </div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>🔄 Analyzing image with YOLOv8 model...</p>
+            </div>
+        </div>
+        
+        <div class="results-section">
+            {% if error %}
+                <div class="error-message">❌ Error: {{ error }}</div>
+            {% endif %}
+            
+            {% if results %}
+                {% if results[0].message %}
+                    <div class="message">⚠️ {{ results[0].message }}</div>
+                {% else %}
+                    <div class="success-message">✅ Detection Complete! Here's what we found:</div>
+                    
+                    <div class="results-container">
+                        {% for result in results %}
+                            <div class="result-card {{ result.class|lower }}">
+                                <div class="waste-icon">
+                                    {% if result.class|lower == 'plastic' %}🛢️
+                                    {% elif result.class|lower == 'medical' %}⚕️
+                                    {% elif result.class|lower == 'organic' %}🌱
+                                    {% elif result.class|lower == 'chemical' %}☢️
+                                    {% else %}🗑️{% endif %}
+                                </div>
+                                
+                                <div class="class-name">{{ result.class }}</div>
+                                <div class="confidence">Confidence: <strong>{{ result.confidence }}%</strong></div>
+                                
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <span class="info-label">⚠️ Waste Hazard Index (WHI):</span>
+                                        <span class="info-value">{{ result.whi }}</span>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <span class="info-label">🔴 Toxicity Level:</span>
+                                        <span class="info-value">
+                                            <span class="badge {% if 'Critical' in result.toxicity %}critical{% elif 'High' in result.toxicity %}high{% else %}low{% endif %}">
+                                                {{ result.toxicity }}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <span class="info-label">⏰ Degradation Time:</span>
+                                        <span class="info-value">{{ result.years_to_degrade }}</span>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <span class="info-label">🌍 Environmental Impact:</span>
+                                        <span class="info-value">{{ result.environmental_impact }}</span>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <span class="info-label">♻️ Recycling Status:</span>
+                                        <span class="info-value">{{ result.recycling }}</span>
+                                    </div>
+                                </div>
+                                
+                                {% if result.cleanup_alert %}
+                                <div class="cleanup-alert">
+                                    {{ result.cleanup_alert }}
+                                </div>
+                                {% endif %}
+                                
+                                <div class="tips">
+                                    <strong>💡 Disposal Guide:</strong>
+                                    {{ result.tips }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if image_url %}
+                        <div class="image-preview">
+                            <h3>📷 Analyzed Image</h3>
+                            <img src="{{ image_url }}" alt="Uploaded waste image">
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <div class="no-results">
+                    <h2>🌍 Welcome to ComVesters!</h2>
+                    <p>Upload an image to detect waste types (plastic, organic, medical, chemical) using YOLOv8 and get detailed health impact analysis with Waste Hazard Index (WHI)</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <footer>
+            <p>🌿 Combining machine learning and risk analysis for better waste awareness.</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Drag and drop functionality
+        const uploadArea = document.querySelector('.upload-area');
+        const imageInput = document.getElementById('imageInput');
+        const uploadForm = document.getElementById('uploadForm');
+        const loading = document.getElementById('loading');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '#f0f1ff';
+            uploadArea.style.borderColor = '#764ba2';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.background = '#f8f9ff';
+            uploadArea.style.borderColor = '#667eea';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                imageInput.files = files;
+            }
+        });
+        
+        // Show filename when selected
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const filename = e.target.files[0].name;
+                const label = uploadArea.querySelector('p');
+                label.textContent = `📄 Selected: ${filename}`;
+            }
+        });
+        
+        uploadForm.addEventListener('submit', () => {
+            loading.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
