@@ -1,6 +1,9 @@
 from ultralytics import YOLO
 from PIL import Image
 import os
+import torch
+
+torch.set_num_threads(1)
 # Load model once
 model = None
 
