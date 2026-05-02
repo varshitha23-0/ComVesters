@@ -2,7 +2,7 @@ from ultralytics import YOLO
 from PIL import Image
 
 # Load model once
-model = YOLO("best.pt")
+model = YOLO("app/best.pt")
 
 # Class-specific information for waste types
 class_info = {
