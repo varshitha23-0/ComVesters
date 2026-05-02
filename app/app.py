@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, send_from_directory
 import os
 from ultralytics import YOLO
 from werkzeug.utils import secure_filename
-from detector import detect_image, class_info
+from app.detector import detect_image, class_info
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "uploads"
