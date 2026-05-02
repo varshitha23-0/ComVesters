@@ -48,7 +48,7 @@ class_info = {
 
 def detect_image(image_path):
     image = Image.open(image_path).convert("RGB")
-     m = get_model()
+    m = get_model()
     results = m(image)
 
     output = []
