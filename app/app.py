@@ -1,15 +1,11 @@
 from flask import Flask, render_template, request
 from PIL import Image
-import torch
 import gc
 import io
 
 from app.detector import detect_image, class_info
 
 app = Flask(__name__)
-
-torch.set_num_threads(1)
-
 
 TOXICITY_WEIGHTS = {
     'plastic': 9.0,
@@ -44,7 +40,6 @@ def get_cleanup_alert(whi, waste_type):
         return f"✓ Low-risk {waste_type}."
 
 
-
 @app.route("/", methods=["GET", "POST"])
 def index():
     results = []
@@ -54,6 +49,8 @@ def index():
 
         if not file:
             return render_template("index.html", results=[], error="No image uploaded")
+
+        image = None  # ✅ safe init
 
         try:
             image = Image.open(io.BytesIO(file.read())).convert("RGB")
@@ -82,15 +79,16 @@ def index():
             else:
                 results = [{"class": "No Objects", "confidence": 0}]
 
+        except Exception as e:
+            return render_template("index.html", results=[], error=str(e))
+
         finally:
-            del file
-            del image
+            if image:
+                del image
             gc.collect()
 
     return render_template("index.html", results=results)
 
-
-# ---------------- RUN ---------------- #
 
 if __name__ == "__main__":
     app.run()
