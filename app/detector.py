@@ -2,7 +2,7 @@ from ultralytics import YOLO
 from PIL import Image
 import os
 import torch
-
+import gc
 torch.set_num_threads(1)
 # Load model once
 model = None
@@ -53,22 +53,36 @@ class_info = {
 def detect_image(image_path):
     image = Image.open(image_path).convert("RGB")
     m = get_model()
-    results = m(image)
+    results = None 
+    try:
+        results = m.predict(
+            source=image,
+            imgsz=640,
+            device='cpu',
+            verbose=False
+        )
 
-    output = []
+        output = []
 
-    for r in results:
-        for box in r.boxes:
-            class_id = int(box.cls[0])
-            confidence = float(box.conf[0])
-            class_name = model.names[class_id]
+        for r in results:
+            for box in r.boxes:
+                class_id = int(box.cls[0])
+                confidence = float(box.conf[0])
+                class_name = m.names[class_id]   
 
-            info = class_info.get(class_name, {})
+                info = class_info.get(class_name, {})
 
-            output.append({
-                "class": class_name,
-                "confidence": round(confidence, 2),
-                "info": info
-            })
+                output.append({
+                    "class": class_name,
+                    "confidence": round(confidence, 2),
+                    "info": info
+                })
 
-    return output
+        return output
+
+    finally:
+        del image
+        if results is not None:
+            del results
+       
+        gc.collect()
