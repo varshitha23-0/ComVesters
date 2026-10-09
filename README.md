@@ -42,11 +42,9 @@ ComVesters/
 ### 1. Clone the Repository
 
 ```bash
-git clone YOUR_REPOSITORY_URL
+git clone https://github.com/varshitha23-0/ComVesters
 cd ComVesters
 ```
-
-Replace `YOUR_REPOSITORY_URL` with your GitHub repository URL.
 
 ### 2. Create a Virtual Environment
 
